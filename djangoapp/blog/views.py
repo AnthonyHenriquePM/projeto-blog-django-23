@@ -4,9 +4,7 @@ from blog.models import Post
 
 
 def index(request):
-    posts = Post.objects \
-        .filter(is_published=True)\
-        .order_by('-pk')
+    posts = Post.objects.get_published()
 
     paginator = Paginator(posts, 9)
     page_number = request.GET.get("page")

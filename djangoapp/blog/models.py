@@ -39,6 +39,9 @@ class Tag(models.Model):
             self.slug = slugify_new(self.name, 5)
         return super().save(*args, **kwargs)
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class Category(models.Model):
     class Meta:
@@ -82,10 +85,17 @@ class Page(models.Model):
         return self.title
 
 
+class PostManager(models.Manager):
+    def get_published(self):
+        return self.filter(is_published=True).order_by('-pk')
+
+
 class Post(models.Model):
     class Meta:
         verbose_name = 'Post'
         verbose_name_plural = 'Posts'
+
+    objects = PostManager()
 
     title = models.CharField(max_length=65, default='socorro')
     slug = models.SlugField(
