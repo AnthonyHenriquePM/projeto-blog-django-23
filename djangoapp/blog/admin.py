@@ -1,13 +1,13 @@
+from blog.models import Category, Page, Post, Tag
 from django.contrib import admin
-from blog.models import Tag, Category, Page, Post
 from django_summernote.admin import SummernoteModelAdmin
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = 'id', 'name', 'slug'
+    list_display = 'id', 'name', 'slug',
     list_display_links = 'name',
-    search_fields = 'id', 'name', 'slug'
+    search_fields = 'id', 'name', 'slug',
     list_per_page = 10
     ordering = '-id',
     prepopulated_fields = {
@@ -17,9 +17,9 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = 'id', 'name', 'slug'
+    list_display = 'id', 'name', 'slug',
     list_display_links = 'name',
-    search_fields = 'id', 'name', 'slug'
+    search_fields = 'id', 'name', 'slug',
     list_per_page = 10
     ordering = '-id',
     prepopulated_fields = {
@@ -28,10 +28,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Page)
-class PageAdmin(admin.ModelAdmin):
-    list_display = 'id', 'title', 'is_published'
+class PageAdmin(SummernoteModelAdmin):
+    summernote_fields = ('content',)
+    list_display = 'id', 'title', 'is_published',
     list_display_links = 'title',
-    search_fields = 'id', 'title', 'slug', 'content',
+    search_fields = 'id', 'slug', 'title', 'content',
     list_per_page = 50
     list_filter = 'is_published',
     list_editable = 'is_published',
@@ -57,12 +58,10 @@ class PostAdmin(SummernoteModelAdmin):
     }
     autocomplete_fields = 'tags', 'category',
 
+    def save_model(self, request, obj, form, change):
+        if change:
+            obj.updated_by = request.user  # type: ignore
+        else:
+            obj.created_by = request.user  # type: ignore
 
-def save_model(self, request, obj, form, change):
-    if change:
-        obj.updated_by = request.user
-
-    else:
-        obj.created_by = request.user
-
-    obj.save()
+        obj.save()
