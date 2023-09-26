@@ -1,5 +1,6 @@
 from typing import Any
-from django.shortcuts import redirect, render
+from django.db.models.query import QuerySet
+from django.shortcuts import render
 from django.core.paginator import Paginator
 from blog.models import Post, Page
 from django.db.models import Q
@@ -75,10 +76,6 @@ def created_by(request, author_pk):
     )
 
 
-class CategoryListView(PostListView):
-    ...
-
-
 class CreatedByListView(PostListView):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -124,6 +121,24 @@ class CreatedByListView(PostListView):
         })
 
         return ctx
+
+
+class CategoryListView(PostListView):
+    allow_empty = False
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().filter(
+            category__slug=self.kwargs.get('slug')
+        )
+
+    def get_context_data(self, **kwargs: Any):
+        cxt = super().get_context_data(**kwargs)
+        page_title = f'{self.object_list[0].category.name} - Categoria - '
+        cxt.update({
+            'page_title': page_title,
+        })
+
+        return cxt
 
 
 def category(request, slug):
